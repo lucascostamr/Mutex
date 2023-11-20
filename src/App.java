@@ -1,9 +1,14 @@
+import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
 public class App {
     private static final int NUMFILO = 5;
     private static Semaphore[] hashi = new Semaphore[NUMFILO];
     private static Semaphore saleiro = new Semaphore(1);
+    private static List<String> quemMeditou = new Stack<>();
+    private static List<String> quemComeu = new Stack<>();
+    private static boolean isOn = true; 
 
     public static void main(String[] args) {
         for (int i = 0; i < NUMFILO; i++) {
@@ -13,6 +18,9 @@ public class App {
         for (int i = 0; i < NUMFILO; i++) {
             new Thread(new Filosofo(i)).start();
         }
+
+        System.out.println(quemMeditou.toString());
+        System.out.println(quemComeu.toString());
     }
 
     static class Filosofo implements Runnable {
@@ -28,7 +36,7 @@ public class App {
 
         @Override
         public void run() {
-            while (true) {
+            while (isOn) {
                 meditar();
                 try {
                     saleiro.acquire(); // Com o saleiro todos conseguem se alimentar. Se retirar o saleiro entra em deadlock causando starvetion
@@ -45,17 +53,29 @@ public class App {
         }
 
         private void meditar() {
-            //Comentei os prints para deixar a sainda mais limpa. Vamo pensar em alguma coisa pra colocar aqui. Um contador talvez
+            String nomeThread = Thread.currentThread().getName();
 
-            // implementação da função meditar
-            // System.out.println(Thread.currentThread().getName());
-            // System.out.println("meditando");
+            if (quemMeditou.size() == NUMFILO) {
+                isOn = false;
+                return;
+            }
+
+            if(!quemMeditou.contains(nomeThread)) {
+                quemMeditou.add(nomeThread);
+            }
         }
 
         private void comer() {
-            // implementação da função comer
-            System.out.println("\n" + Thread.currentThread().getName());
-            System.out.println("comendo");
+            String nomeThread = Thread.currentThread().getName();
+
+            if (quemComeu.size() == NUMFILO) {
+                isOn = false;
+                return;
+            }
+
+            if(!quemComeu.contains(nomeThread)){
+                quemComeu.add(nomeThread);
+            }
         }
     }
 }
