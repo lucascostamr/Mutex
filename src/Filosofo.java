@@ -1,37 +1,77 @@
+import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
-public class Filosofo implements Runnable{
-    private int 
-        index,
-        direito,
-        esquerdo;
+class Filosofo implements Runnable {
+    private int i;
+    private int dir;
+    private int esq;
+    private static int NUMFILO;
     
-    private static boolean isAvaible = true;
     private static Semaphore[] hashi = new Semaphore[NUMFILO];
+    private static Semaphore saleiro = new Semaphore(1);
+    private static List<String> quemMeditou = new Stack<>();
+    private static List<String> quemComeu = new Stack<>();
+    private static boolean isOn = true;
 
+    public Filosofo(int i) {
+        this.i = i;
+        this.dir = i;
+        this.esq = (i + 1) % NUMFILO;
+    }
 
-    public Filosofo(int numFilosofo, int totalFilosofos){
-        this.index = numFilosofo;
-        this.direito = numFilosofo;
+    public static void setHashi(Semaphore[] newHashi) {
+        hashi = newHashi;
+        return;
+    }
 
-        this.esquerdo = (index + 1) % totalFilosofos;
-        
-        for(int i = 0; i < totalFilosofos; i++) {
-            //Cria um semaforo para cada Filosofo
-            hashi[i] = new Semaphore(1); //Permite apenas um
-        }
+    public static void setNUMFILO(int numFilo) {
+        NUMFILO = numFilo;
+        return;
     }
 
     @Override
-    public void run(){
-        meditar();
-        while(isAvaible) {
-            hashi[this.direito].acquire();
-            hashi[this.esquerdo].acquire();
-            hashi[this.direito].release();
-            hashi[this.esquerdo].release();
-
+    public void run() {
+        while (isOn) {
+            meditar();
+            try {
+                saleiro.acquire(); // Com o saleiro todos conseguem se alimentar. Se retirar o saleiro entra em
+                                   // deadlock causando starvetion
+                hashi[dir].acquire(); // pega palito direito
+                hashi[esq].acquire(); // pega palito esquerdo
+                saleiro.release();
+                comer();
+                hashi[dir].release(); // devolve palito direito
+                hashi[esq].release(); // devolve palito esquerdo
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        return;
+    }
+
+    private void meditar() {
+        String nomeThread = Thread.currentThread().getName();
+
+        if (quemMeditou.size() == NUMFILO) {
+            isOn = false;
+            return;
+        }
+
+        if (!quemMeditou.contains(nomeThread)) {
+            quemMeditou.add(nomeThread);
+        }
+    }
+
+    private void comer() {
+        String nomeThread = Thread.currentThread().getName();
+
+        if (quemComeu.size() == NUMFILO) {
+            isOn = false;
+            return;
+        }
+
+        if (!quemComeu.contains(nomeThread)) {
+            quemComeu.add(nomeThread);
+        }
     }
 }
