@@ -7,6 +7,7 @@ public class Table {
     
     // The shared resource that each Philosopher will contend for
     List<Semaphore> forks;
+    private int totalForks = 5;
 
     Table() {
         forks = new ArrayList<>(5);
@@ -14,4 +15,15 @@ public class Table {
             forks.add(new Semaphore(1)); // Each fork is initially available
         }
     }
+
+    public void takeFork(){
+        this.totalForks--;
+    }
+    public void putFork(){
+        this.totalForks++;
+    }
+    public int getTotalForks(){
+        return totalForks;
+    }
+    
 }
