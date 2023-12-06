@@ -2,16 +2,14 @@ import java.util.concurrent.Semaphore;
 
 public class App {
     private static final int NUMFILO = 5;
-    private static Semaphore[] hashi = new Semaphore[NUMFILO];
+    // private static Semaphore[] hashi = new Semaphore[NUMFILO];
     private static Semaphore saleiro = new Semaphore(1);
 
     public static void main(String[] args) {
-        for (int i = 0; i < NUMFILO; i++) {
-            hashi[i] = new Semaphore(1);
-        }
+        Hashi hashi = new Hashi(NUMFILO);
 
         for (int i = 0; i < NUMFILO; i++) {
-            new Thread(new Filosofo(i)).start();
+            new Thread(new Filosofo(i, hashi)).start();
         }
     }
 
@@ -19,11 +17,16 @@ public class App {
         private int i;
         private int dir;
         private int esq;
+        private int cont = 1;
+        private Hashi hashi;
+        private Semaphore[] hashiSemaphores;
 
-        public Filosofo(int i) {
+        public Filosofo(int i, Hashi hashi) {
             this.i = i;
             this.dir = i;
             this.esq = (i + 1) % NUMFILO;
+            this.hashi = hashi;
+            this.hashiSemaphores = hashi.getHashi();
         }
 
         @Override
@@ -32,30 +35,47 @@ public class App {
                 meditar();
                 try {
                     saleiro.acquire(); // Com o saleiro todos conseguem se alimentar. Se retirar o saleiro entra em deadlock causando starvetion
-                    hashi[dir].acquire(); // pega palito direito
-                    hashi[esq].acquire(); // pega palito esquerdo
+                    hashiSemaphores[dir].acquire(); // pega palito direito
+                    hashi.getStatus()[dir] = "OCUPADO";
+                    hashiSemaphores[esq].acquire(); // pega palito esquerdo
+                    hashi.getStatus()[esq] = "OCUPADO";
                     saleiro.release();
                     comer();
-                    hashi[dir].release(); // devolve palito direito
-                    hashi[esq].release(); // devolve palito esquerdo
+                    hashiSemaphores[dir].release(); // devolve palito direito
+                    hashi.getStatus()[dir] = "LIVRE";
+                    hashiSemaphores[esq].release(); // devolve palito esquerdo
+                    hashi.getStatus()[esq] = "LIVRE";
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } finally {
+                    cont--;
                 }
+                hashi.showStatus();
             }
         }
 
         private void meditar() {
-            //Comentei os prints para deixar a sainda mais limpa. Vamo pensar em alguma coisa pra colocar aqui. Um contador talvez
+            try {
+                System.out.println(Thread.currentThread().getName());
+                System.out.println("meditando");
 
-            // implementação da função meditar
-            // System.out.println(Thread.currentThread().getName());
-            // System.out.println("meditando");
+                Thread.sleep(3000);
+
+            } catch (Exception e) {
+                System.err.println(e);
+            }
         }
 
         private void comer() {
             // implementação da função comer
-            System.out.println("\n" + Thread.currentThread().getName());
-            System.out.println("comendo");
+            try {
+                System.out.println("\n" + Thread.currentThread().getName());
+                System.out.println("comendo");
+                Thread.sleep(3000);
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+
         }
     }
 }
