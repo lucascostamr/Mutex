@@ -1,12 +1,18 @@
 package problemaComSemaphore;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Philosopher implements Runnable {
   // The Philosopher identifier
   private int philosopherId;
-  private int forksNaMao = 0;  
-  private int naoComi = 0;
+  private int forksInHand = 0;  
+  private int notEat = 0;
+  private boolean leftFork = false;
+  private boolean rightFork = false;
+  private boolean eating = false;
+  private boolean thinking = false;
+
   
   // A reference to the shared table instance
   private Table table;
@@ -20,117 +26,108 @@ public class Philosopher implements Runnable {
   public void run() {
       while (true) {
           think();
-          eat2();
+          eatPerfectSolution();
       }
   }
 
   // The randomized time that each Philosopher spends thinking
   private void think() {
+      thinking = !thinking;
       System.out.println("Philosopher " + philosopherId + " thinking..");
       try {
           Thread.sleep(new Random().nextInt(5000));
       } catch (InterruptedException e) {
           e.printStackTrace();
       }
+      thinking = !thinking;
   }
 
   //The eating process of each Philosopher instance
-  private void eat() {
+  private void eatPerfectSolution() {
       int left = philosopherId;
       int right = (philosopherId + 1) % table.forks.size();
-      left = new Random().nextInt(table.forks.size());  
-      right = new Random().nextInt(table.forks.size());  
+
 
       System.out.println("Philosopher " + philosopherId + " taking forks..");
 
       try {
           // Acquire both forks
           table.forks.get(left).acquire();
+          leftFork = !leftFork;
           table.forks.get(right).acquire();
+          rightFork = !rightFork;
 
-          System.out.println("Philosopher " + philosopherId + " eating..");
+          eating = !eating;
           Thread.sleep(new Random().nextInt(10000));
+          eating = !eating;
       } catch (InterruptedException e) {
           e.printStackTrace();
       } finally {
-          // Release both forks
-          table.forks.get(left).release();
-          table.forks.get(right).release();
-          System.out.println("Philosopher " + philosopherId + " releasing forks..");
+          
+        // Release both forks
+        table.forks.get(left).release();
+        leftFork = !leftFork;
+        table.forks.get(right).release();
+        rightFork = !rightFork;
       }
   }
-//   private void eat() {
-//     int left = philosopherId;
-//     int right = (philosopherId + 1) % table.forks.size();
-//     left = new Random().nextInt(table.forks.size());  
-//     right = new Random().nextInt(table.forks.size());  
 
-//     System.out.println("Philosopher " + philosopherId + " taking forks..");
-
-//         // Acquire both forks
-//         table.forks.get(left);
-//         table.forks.get(right).acquire();
-
-//         System.out.println("Philosopher " + philosopherId + " eating..");
-//         Thread.sleep(new Random().nextInt(10000));
-    
-//         // Release both forks
-//         table.forks.get(left).release();
-//         table.forks.get(right).release();
-//         System.out.println("Philosopher " + philosopherId + " releasing forks..");
-    
-// }
 
     private void eat2(){
 
 
-        while(forksNaMao >=0 && forksNaMao < 2){
+        while(forksInHand >=0 && forksInHand < 2){
             if(table.getTotalForks() > 0){
                   table.takeFork();  
-                  //System.out.println(philosopherId+ "pegando um garfo");
-                  this.forksNaMao++;
+                  System.out.println(philosopherId+ "pegando um garfo");
+                  this.forksInHand++;
             }
             if(table.getTotalForks() > 0){
                   table.takeFork();  
-                  //System.out.println(philosopherId+ "pegando o segundo garfo");
-                  this.forksNaMao++;
+                  System.out.println(philosopherId+ "pegando o segundo garfo");
+                  this.forksInHand++;
             }
            // System.out.println(forksNaMao);
-            if(forksNaMao == 1){
+            if(forksInHand == 1){
                 System.out.println("nao comi");
-                this.naoComi++;
+                this.notEat++;
                 table.putFork();
-                this.forksNaMao--;
+                this.forksInHand--;
             }
         }
         
-        System.out.println("comendo" + naoComi);
+        System.out.println("comendo" + notEat);
         table.putFork();
-        this.forksNaMao--;
+        this.forksInHand--;
         table.putFork();
-        this.forksNaMao--;
+        this.forksInHand--;
 
     }
 
-    private void eat3(){
-
-
-        while(forksNaMao >=0 && forksNaMao < 2){
+    private void eatSimpleSolutionNoMutex(){
+        while(forksInHand >=0 && forksInHand < 2){
             if(table.getTotalForks() > 0){
                   table.takeFork();  
-                  //System.out.println(philosopherId+ "pegando um garfo");
-                  this.forksNaMao++;
+                  System.out.println(philosopherId+ "pegando um garfo");
+                  this.forksInHand++;
             }
-
         }
-        System.out.println("comendo" + naoComi);
+        System.out.println("comendo" + notEat);
         table.putFork();
-        this.forksNaMao--;
+        this.forksInHand--;
         table.putFork();
-        this.forksNaMao--;
-
+        this.forksInHand--;
     }
 
-  
-
+    @Override
+    public String toString() {
+        return "Philosopher{" +
+                "philosopherId=" + philosopherId +
+                ", leftFork=" + leftFork +
+                ", rightFork=" + rightFork +
+                ", eating=" + eating +
+                ", thinking=" + thinking +
+                '}';
+    }
+    
 }

@@ -17,6 +17,11 @@ public class Main {
             thread.start();
         }
 
+        for (Thread filo : threads){
+            System.out.println(filo.toString());
+        }
+
+
         for (Thread thread : threads) {
             try {
                 thread.join();
