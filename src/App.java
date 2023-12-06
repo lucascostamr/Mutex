@@ -35,16 +35,27 @@ public class App {
                 meditar();
                 try {
                     saleiro.acquire(); // Com o saleiro todos conseguem se alimentar. Se retirar o saleiro entra em deadlock causando starvetion
+
                     hashiSemaphores[dir].acquire(); // pega palito direito
                     hashi.getStatus()[dir] = "OCUPADO";
+                    hashi.showStatus();
+
                     hashiSemaphores[esq].acquire(); // pega palito esquerdo
                     hashi.getStatus()[esq] = "OCUPADO";
+                    hashi.showStatus();
+
                     saleiro.release();
+                    
                     comer();
+
                     hashiSemaphores[dir].release(); // devolve palito direito
                     hashi.getStatus()[dir] = "LIVRE";
+                    hashi.showStatus();
+
                     hashiSemaphores[esq].release(); // devolve palito esquerdo
                     hashi.getStatus()[esq] = "LIVRE";
+                    hashi.showStatus();
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
