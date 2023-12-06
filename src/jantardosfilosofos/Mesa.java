@@ -71,6 +71,11 @@ public class Mesa extends JPanel implements Runnable {
                 g.setColor(Color.green);
                 mensagem = "COMENDO";
             }
+            if (estado[i] == 3) {
+                g.setColor(Color.red);
+                mensagem = "RAIVA";
+            }
+
 
             g.fillOval((int) (200D - 100D * Math.cos(1.2566370614359172D * (double) i)) - 15,
                     (int) (200D - 100D * Math.sin(1.2566370614359172D * (double) i)) - 15, 30, 30);

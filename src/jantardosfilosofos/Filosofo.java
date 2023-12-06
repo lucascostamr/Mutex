@@ -24,7 +24,7 @@ public class Filosofo extends Thread {
         System.out.println("O Filósofo " + getName() + " está COMENDO!");
 
         try {
-            Thread.sleep(1000L);
+            Thread.sleep(new Random().nextInt(10000));
         } catch (InterruptedException ex) {
             System.out.println("ERROR>" + ex.getMessage());
         }
@@ -34,7 +34,7 @@ public class Filosofo extends Thread {
         Mesa.estado[this.ID] = 0;
         System.out.println("O Filósofo " + getName() + " está PENSANDO!");
         try {
-            Thread.sleep(1000L);
+            Thread.sleep(new Random().nextInt(10));
         } catch (InterruptedException ex) {
             System.out.println("ERROR>" + ex.getMessage());
         }
@@ -49,15 +49,24 @@ public class Filosofo extends Thread {
     
     public void PegarGarfo() {
         try {
-            Mesa.saleiro.acquire(); 
+            //Mesa.saleiro.acquire(); 
             ComFome();
             TentarObterGarfos();
 
         } catch (InterruptedException ex) {
             System.out.println("ERROR>" + ex.getMessage());
         } finally {
-            Mesa.saleiro.release();
+            //Mesa.saleiro.release();
             Mesa.garfo[this.ID].release();
+            if(Mesa.estado[this.ID] == 1){
+                Mesa.estado[this.ID] = 3;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    System.out.println("ERROR>" + ex.getMessage());
+                }
+                Mesa.estado[this.ID] = 1;
+            }
         }
     }
     public void TentarObterGarfos() throws InterruptedException {

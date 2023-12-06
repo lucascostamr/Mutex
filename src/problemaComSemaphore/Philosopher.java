@@ -2,25 +2,25 @@ package problemaComSemaphore;
 
 import java.util.Random;
 
-public class Philosopher implements Runnable {
-    private int philosopherId;
-    private Table table;
+public class Filosofo implements Runnable {
+    private int filosofoId;
+    private Mesa mesa;
 
-    Philosopher(int id, Table table) {
-        philosopherId = id;
-        this.table = table;
+    Filosofo(int id, Mesa mesa) {
+        filosofoId = id;
+        this.mesa = mesa;
     }
 
     @Override
     public void run() {
         while (true) {
-            think();
-            eatPerfectSolution();
+            pensa();
+            comeSolucaoPerfeita();
         }
     }
 
-    private void think() {
-        System.out.println("Philosopher " + philosopherId + " thinking..");
+    private void pensa() {
+        System.out.println("Filósofo " + filosofoId + " pensando..");
         try {
             Thread.sleep(new Random().nextInt(5000));
         } catch (InterruptedException e) {
@@ -28,23 +28,26 @@ public class Philosopher implements Runnable {
         }
     }
 
-    private void eatPerfectSolution() {
-        int left = philosopherId;
-        int right = (philosopherId + 1) % table.forks.size();
+    private void comeSolucaoPerfeita() {
+        int garfoEsquerda = filosofoId;
+        int garfoDireita = (filosofoId + 1) % mesa.garfos.size();
 
-        System.out.println("Philosopher " + philosopherId + " taking forks..");
+        System.out.println("Filósofo " + filosofoId + " pegando garfos..");
 
         try {
-            table.forks.get(left).acquire();
-            table.forks.get(right).acquire();
+            mesa.garfos.get(garfoEsquerda).acquire();
+            mesa.garfos.get(garfoDireita).acquire();
+
+            mesa.setEstado(filosofoId, 2); // Filósofo está comendo
+            System.out.println("Filósofo " + filosofoId + " comendo..");
 
             Thread.sleep(new Random().nextInt(10000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            table.forks.get(left).release();
-            table.forks.get(right).release();
+            mesa.garfos.get(garfoEsquerda).release();
+            mesa.garfos.get(garfoDireita).release();
+            mesa.setEstado(filosofoId, 0); // Filósofo está pensando após comer
         }
     }
-
 }
